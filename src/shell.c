@@ -27,6 +27,10 @@ void test_command(int, char **);
 
 #define MKCL(n, d) {.name=#n, .fptr=n ## _command, .desc=d}
 
+static uint32_t get_unaligned(const uint8_t * d) {
+    return ((uint32_t) d[0]) | ((uint32_t) (d[1] << 8)) | ((uint32_t) (d[2] << 16)) | ((uint32_t) (d[3] << 24));
+}
+
 cmdlist cl[]={
 	MKCL(ls, "List directory"),
 	MKCL(man, "Show the manual of the command"),
@@ -61,6 +65,21 @@ int parse_command(char *str, char *argv[]){
 
 void ls_command(int n, char *argv[]){
 
+	uint8_t *meta;
+	for (meta = fs_getROMFS(argv[2]); meta != NULL && get_unaligned(meta) && get_unaligned(meta + 4); meta += get_unaligned(meta + 4) + 9 + *(meta + 8 + get_unaligned(meta + 4))) 
+	{
+		char temp[255] = "\0";
+		int i,len = (int)*(meta + 8 + get_unaligned(meta + 4));
+		for (i = 0 ;i <len ; i++)
+		{
+			temp[i] = (char )*(meta + 9 + get_unaligned(meta + 4)+i);
+		}
+		temp[len] = '\0';
+	
+		fio_printf(1,"\r\n%d:%s\t",len,temp);
+		fio_write(1, (meta + 9 + get_unaligned(meta + 4)), len);
+	}
+	fio_printf(1,"\r\n");
 }
 
 int filedump(const char *filename){
@@ -145,7 +164,7 @@ void test_command(int n, char *argv[]) {
     int error;
 
     fio_printf(1, "\r\n");
-
+	
     handle = host_action(SYS_OPEN, "output/syslog", 8);
     if(handle == -1) {
         fio_printf(1, "Open file error!\n\r");
