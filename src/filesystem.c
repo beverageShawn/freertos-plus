@@ -60,3 +60,28 @@ int fs_open(const char * path, int flags, int mode) {
     
     return -2;
 }
+
+uint8_t *fs_getROMFS(const char * path) {
+    const char * slash;
+    uint32_t hash;
+    int i;
+//    DBGOUT("fs_open(\"%s\", %i, %i)\r\n", path, flags, mode);
+    
+    while (path[0] == '/')
+        path++;
+    
+    slash = strchr(path, '/');
+    
+    if (!slash)
+        return NULL;
+
+    hash = hash_djb2((const uint8_t *) path, slash - path);
+    path = slash + 1;
+
+    for (i = 0; i < MAX_FS; i++) {
+        if (fss[i].hash == hash)
+            return fss[i].opaque;
+    }
+    
+    return NULL;
+}
