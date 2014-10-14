@@ -8,12 +8,15 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "host.h"
+#include "testFunction.h"
 
 typedef struct {
 	const char *name;
 	cmdfunc *fptr;
 	const char *desc;
 } cmdlist;
+
+
 
 void ls_command(int, char **);
 void man_command(int, char **);
@@ -26,6 +29,7 @@ void mmtest_command(int, char **);
 void test_command(int, char **);
 
 #define MKCL(n, d) {.name=#n, .fptr=n ## _command, .desc=d}
+
 
 static uint32_t get_unaligned(const uint8_t * d) {
     return ((uint32_t) d[0]) | ((uint32_t) (d[1] << 8)) | ((uint32_t) (d[2] << 16)) | ((uint32_t) (d[3] << 24));
@@ -163,13 +167,31 @@ void test_command(int n, char *argv[]) {
     int handle;
     int error;
 
-    fio_printf(1, "\r\n");
-	
     handle = host_action(SYS_OPEN, "output/syslog", 8);
     if(handle == -1) {
-        fio_printf(1, "Open file error!\n\r");
+        fio_printf(1, "\r\nOpen file error!\n\r");
         return;
     }
+	
+	if (strcmp(argv[1],"fib") == 0)	
+	{
+		if (n == 3 )
+		{
+			int count = 0,i = 0;
+			int c = 1;
+			for (i = strlen(argv[2]) -1; i >-1 ; i--)
+			{
+				count += (int)(argv[2][i] - 48)*c;
+				c = c *10;
+			}		
+			int result = (int)fib_test(count-1);
+			fio_printf(1,"\r\nThe %dth number of fib is %d\r\n",count,result);	
+		}
+		else
+		{
+			fio_printf(1,"\r\n--test command, fib usage: test fib 'integer'\r\n");	
+		}
+	}
 
     char *buffer = "Test host_write function which can write data to output/syslog\n";
     error = host_action(SYS_WRITE, handle, (void *)buffer, strlen(buffer));
