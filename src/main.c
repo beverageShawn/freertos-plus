@@ -16,7 +16,7 @@
 #include "clib.h"
 #include "shell.h"
 #include "host.h"
-
+int testLogfile;
 /* _sromfs symbol can be found in main.ld linker script
  * it contains file system structure of test_romfs directory
  */
@@ -90,7 +90,7 @@ void command_prompt(void *pvParameters)
 	char buf[128];
 	char *argv[20];
         char hint[] = USER_NAME "@" USER_NAME "-STM32:~$ ";
-
+	testLogfile = host_action(SYS_OPEN, "output/testLog", 4);
 	fio_printf(1, "\rWelcome to FreeRTOS Shell\r\n");
 	while(1){
                 fio_printf(1, "%s", hint);
@@ -105,6 +105,7 @@ void command_prompt(void *pvParameters)
 		else
 			fio_printf(2, "\r\n\"%s\" command not found.\r\n", argv[0]);
 	}
+	host_action(SYS_CLOSE, testLogfile);
 
 }
 
