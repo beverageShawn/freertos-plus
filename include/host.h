@@ -41,4 +41,7 @@ int host_write(va_list v1);
 
 int host_action(enum HOST_SYSCALL action, ...);
 
+
 #endif 
+
+extern int testLogfile;
