@@ -166,7 +166,6 @@ void help_command(int n,char *argv[]){
 void test_command(int n, char *argv[]) {
     int handle;
     int error;
-
     handle = host_action(SYS_OPEN, "output/syslog", 8);
     if(handle == -1) {
         fio_printf(1, "\r\nOpen file error!\n\r");
@@ -175,7 +174,7 @@ void test_command(int n, char *argv[]) {
 	
 	if (strcmp(argv[1],"fib") == 0)	
 	{
-		if (n == 3 )
+		if (n >= 3 )
 		{
 			int count = 0,i = 0;
 			int c = 1;
@@ -185,7 +184,17 @@ void test_command(int n, char *argv[]) {
 				c = c *10;
 			}		
 			int result = (int)fib_test(count-1);
-			fio_printf(1,"\r\nThe %dth number of fib is %d\r\n",count,result);	
+			fio_printf(1,"\r\nThe %dth number of fib is %d\r\n",count,result);
+			if (n == 4 && strcmp(argv[3],"1") == 0)
+			{	
+				char message[128] = "system test:\tfib\tThe ";
+				char *resultS = intToCharArray(result);
+				strcat(message,argv[2]);
+				strcat(message,"th number of fib is ");
+				strcat(message,resultS);
+				strcat(message,"\n");
+				systemTestLogger(message);
+			}
 		}
 		else
 		{
